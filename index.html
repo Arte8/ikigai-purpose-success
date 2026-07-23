@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ikigai Discovery App</title>
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --panel: rgba(255, 255, 255, 0.92);
+      --text: #233126;
+      --muted: #667368;
+      --border: #d7ded4;
+      --accent: #436f52;
+      --love: #e9777b;
+      --skill: #e1ad4f;
+      --need: #4f9e82;
+      --paid: #5e7fc7;
+      --complete: #6f4da0;
+      --shadow: 0 18px 45px rgba(35, 49, 38, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(233,119,123,0.16), transparent 30%),
+        radial-gradient(circle at top right, rgba(79,158,130,0.18), transparent 30%),
+        linear-gradient(135deg, #f7f3ea, #edf4ee);
+    }
+
+    button,
+    textarea,
+    input {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+
+    .hero,
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1;
+    }
+
+    .hero p:last-child {
+      margin-bottom: 0;
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .card {
+      padding: 26px;
+    }
+
+    .progress-wrap {
+      margin-bottom: 22px;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .progress-track {
+      height: 10px;
+      background: #e7ebe5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--love), var(--skill), var(--need), var(--paid));
+      transition: width 0.25s ease;
+    }
+
+    .question-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .question-title {
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+
+    .question-help {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      color: var(--text);
+      background: rgba(255,255,255,0.85);
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(67,111,82,0.12);
+    }
+
+    .score-group {
+      margin-top: 18px;
+    }
+
+    .score-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .secondary {
+      background: #e9eee8;
+      color: var(--text);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .danger {
+      background: #efe3e2;
+      color: #8a3f3b;
+    }
+
+    .ikigai-map {
+      position: relative;
+      width: min(100%, 470px);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto 24px;
+    }
+
+    .circle {
+      position: absolute;
+      width: 58%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 16px;
+      font-weight: 900;
+      color: white;
+      opacity: 0.82;
+      border: 3px solid rgba(255,255,255,0.78);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+      transition: 0.25s ease;
+    }
+
+    .circle.active {
+      opacity: 0.98;
+      transform: scale(1.035);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.13);
+      z-index: 4;
+    }
+
+    .love {
+      top: 2%;
+      left: 21%;
+      background: var(--love);
+    }
+
+    .skill {
+      top: 21%;
+      right: 2%;
+      background: var(--skill);
+    }
+
+    .need {
+      bottom: 2%;
+      left: 21%;
+      background: var(--need);
+    }
+
+    .paid {
+      top: 21%;
+      left: 2%;
+      background: var(--paid);
+    }
+
+    .center-label {
+      position: absolute;
+      inset: 38%;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 8px;
+      background: white;
+      color: var(--complete);
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(35,49,38,0.16);
+      z-index: 8;
+      border: 2px solid #eee8f4;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .legend-item {
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--border);
+      font-size: 0.92rem;
+    }
+
+    .legend-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .status-box {
+      border-radius: 18px;
+      padding: 18px;
+      background: #f4f7f3;
+      border: 1px solid var(--border);
+    }
+
+    .status-box h3 {
+      margin-bottom: 8px;
+    }
+
+    .status-box p {
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+
+    .results {
+      display: none;
+      margin-top: 24px;
+    }
+
+    .results.show {
+      display: block;
+    }
+
+    .result-banner {
+      padding: 20px;
+      border-radius: 18px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, rgba(111,77,160,0.12), rgba(67,111,82,0.10));
+      border: 1px solid #ddd4ea;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .result-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(255,255,255,0.75);
+    }
+
+    .result-item h3 {
+      margin-bottom: 6px;
+    }
+
+    .result-item p {
+      margin-bottom: 8px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 900;
+      background: #e7eee8;
+      color: var(--accent);
+    }
+
+    .small-note {
+      margin-top: 14px;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .ikigai-map {
+        max-width: 430px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .app-shell {
+        width: min(100% - 20px, 1120px);
+        margin: 10px auto 24px;
+      }
+
+      .hero,
+      .card {
+        border-radius: 18px;
+      }
+
+      .hero,
+      .card {
+        padding: 20px;
+      }
+
+      .legend {
+        grid-template-columns: 1fr;
+      }
+
+      .circle {
+        font-size: 0.82rem;
+      }
+
+      .center-label {
+        font-size: 0.75rem;
+      }
+
+      .actions button {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero">
+      <p class="eyebrow">Purpose discovery tool</p>
+      <h1>Explore Your Ikigai</h1>
+      <p>
+        Answer questions about what you love, what you are good at, what people need,
+        and what could support you financially. The app maps your answers and estimates
+        whether all four areas are sufficiently represented.
+      </p>
+    </section>
+
+    <section class="grid">
+      <div>
+        <section class="card">
+          <div class="progress-wrap">
+            <div class="progress-meta">
+              <span id="progressText">Question 1 of 8</span>
+              <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+          </div>
+
+          <div id="questionArea">
+            <div class="question-label" id="categoryLabel">What you love</div>
+            <h2 class="question-title" id="questionTitle"></h2>
+            <p class="question-help" id="questionHelp"></p>
+
+            <textarea
+              id="answerInput"
+              placeholder="Write a few words or sentences..."
+              aria-label="Your answer"
+            ></textarea>
+
+            <div class="score-group">
+              <div class="score-label">
+                <span>How strongly does this apply?</span>
+                <span id="scoreValue">3 / 5</span>
+              </div>
+              <input id="scoreInput" type="range" min="1" max="5" value="3" />
+            </div>
+
+            <div class="actions">
+              <button class="secondary" id="backButton" type="button">Back</button>
+              <button class="primary" id="nextButton" type="button">Next</button>
+            </div>
+          </div>
+
+          <div class="results" id="resultsArea">
+            <div class="result-banner">
+              <p class="eyebrow">Your Ikigai result</p>
+              <h2 id="resultTitle"></h2>
+              <p id="resultSummary"></p>
+            </div>
+
+            <div class="result-list" id="resultList"></div>
+
+            <p class="small-note">
+              This is a reflective tool, not a scientific or psychological assessment.
+              Your answers can change over time as your priorities, experience, and opportunities change.
+            </p>
+
+            <div class="actions">
+              <button class="secondary" id="editButton" type="button">Review answers</button>
+              <button class="danger" id="restartButton" type="button">Start over</button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="card">
+        <div class="ikigai-map" aria-label="Ikigai four-circle map">
+          <div class="circle love" data-category="love">What You Love</div>
+          <div class="circle skill" data-category="skill">What You Are Good At</div>
+          <div class="circle need" data-category="need">What People Need</div>
+          <div class="circle paid" data-category="paid">What You Can Be Paid For</div>
+          <div class="center-label">Your Ikigai</div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <strong>Passion</strong>
+            Love + Skill
+          </div>
+          <div class="legend-item">
+            <strong>Mission</strong>
+            Love + Need
+          </div>
+          <div class="legend-item">
+            <strong>Profession</strong>
+            Skill + Paid
+          </div>
+          <div class="legend-item">
+            <strong>Vocation</strong>
+            Need + Paid
+          </div>
+        </div>
+
+        <div class="status-box">
+          <h3 id="liveStatusTitle">Begin with what energizes you</h3>
+          <p id="liveStatusText">
+            As you answer, this panel will show which Ikigai areas are becoming stronger.
+          </p>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        category: "love",
+        label: "What you love",
+        title: "What activities make you feel energized or deeply engaged?",
+        help: "Think about activities that make you lose track of time or leave you feeling fulfilled."
+      },
+      {
+        category: "love",
+        label: "What you love",
+        title: "What subjects or causes do you naturally care about?",
+        help: "Consider the topics, communities, values, or problems that repeatedly hold your attention."
+      },
+      {
+        category: "skill",
+        label: "What you are good at",
+        title: "What skills do you perform with confidence?",
+        help: "Include technical, creative, practical, social, or organizational abilities."
+      },
+      {
+        category: "skill",
+        label: "What you are good at",
+        title: "What do other people regularly ask you for help with?",
+        help: "Repeated requests from others often reveal useful strengths you may overlook."
+      },
+      {
+        category: "need",
+        label: "What people need",
+        title: "What problems would you genuinely like to help solve?",
+        help: "These may be local, personal, social, environmental, creative, or technical problems."
+      },
+      {
+        category: "need",
+        label: "What people need",
+        title: "Who would benefit most from your interests and abilities?",
+        help: "Name the people, businesses, communities, or audiences you would most like to serve."
+      },
+      {
+        category: "paid",
+        label: "What you can be paid for",
+        title: "Which of your abilities could create practical value for others?",
+        help: "Think about services, products, teaching, consulting, employment, or entrepreneurship."
+      },
+      {
+        category: "paid",
+        label: "What you can be paid for",
+        title: "What work could support you without violating your values?",
+        help: "Consider sustainable work that feels acceptable, worthwhile, and realistic."
+      }
+    ];
+
+    const categoryInfo = {
+      love: {
+        name: "What You Love",
+        description: "Interests, activities, and causes that create enthusiasm and meaning."
+      },
+      skill: {
+        name: "What You Are Good At",
+        description: "Abilities, strengths, and forms of knowledge you can apply effectively."
+      },
+      need: {
+        name: "What People Need",
+        description: "Problems, people, or communities that could benefit from your contribution."
+      },
+      paid: {
+        name: "What You Can Be Paid For",
+        description: "Work, services, or products that can create sustainable economic value."
+      }
+    };
+
+    let currentQuestion = 0;
+    let answers = questions.map(() => ({
+      text: "",
+      score: 3
+    }));
+
+    const progressText = document.getElementById("progressText");
+    const progressPercent = document.getElementById("progressPercent");
+    const progressBar = document.getElementById("progressBar");
+    const categoryLabel = document.getElementById("categoryLabel");
+    const questionTitle = document.getElementById("questionTitle");
+    const questionHelp = document.getElementById("questionHelp");
+    const answerInput = document.getElementById("answerInput");
+    const scoreInput = document.getElementById("scoreInput");
+    const scoreValue = document.getElementById("scoreValue");
+    const backButton = document.getElementById("backButton");
+    const nextButton = document.getElementById("nextButton");
+    const questionArea = document.getElementById("questionArea");
+    const resultsArea = document.getElementById("resultsArea");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultSummary = document.getElementById("resultSummary");
+    const resultList = document.getElementById("resultList");
+    const editButton = document.getElementById("editButton");
+    const restartButton = document.getElementById("restartButton");
+    const liveStatusTitle = document.getElementById("liveStatusTitle");
+    const liveStatusText = document.getElementById("liveStatusText");
+
+    function saveCurrentAnswer() {
+      answers[currentQuestion] = {
+        text: answerInput.value.trim(),
+        score: Number(scoreInput.value)
+      };
+    }
+
+    function loadQuestion() {
+      const question = questions[currentQuestion];
+      const saved = answers[currentQuestion];
+
+      progressText.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+      const percentage = Math.round((currentQuestion / questions.length) * 100);
+      progressPercent.textContent = `${percentage}%`;
+      progressBar.style.width = `${percentage}%`;
+
+      categoryLabel.textContent = question.label;
+      questionTitle.textContent = question.title;
+      questionHelp.textContent = question.help;
+      answerInput.value = saved.text;
+      scoreInput.value = saved.score;
+      scoreValue.textContent = `${saved.score} / 5`;
+
+      backButton.disabled = currentQuestion === 0;
+      nextButton.textContent = currentQuestion === questions.length - 1
+        ? "See my results"
+        : "Next";
+
+      updateCircleHighlight(question.category);
+      updateLiveStatus();
+      answerInput.focus();
+    }
+
+    function updateCircleHighlight(activeCategory) {
+      document.querySelectorAll(".circle").forEach(circle => {
+        circle.classList.toggle(
+          "active",
+          circle.dataset.category === activeCategory
+        );
+      });
+    }
+
+    function getCategoryScores() {
+      const totals = {
+        love: [],
+        skill: [],
+        need: [],
+        paid: []
+      };
+
+      questions.forEach((question, index) => {
+        totals[question.category].push(answers[index].score);
+      });
+
+      const averages = {};
+      Object.keys(totals).forEach(category => {
+        const values = totals[category];
+        averages[category] =
+          values.reduce((sum, value) => sum + value, 0) / values.length;
+      });
+
+      return averages;
+    }
+
+    function getCompletedAnswerCount() {
+      return answers.filter(answer => answer.text.length > 0).length;
+    }
+
+    function updateLiveStatus() {
+      const completed = getCompletedAnswerCount();
+
+      if (completed === 0) {
+        liveStatusTitle.textContent = "Begin with what energizes you";
+        liveStatusText.textContent =
+          "As you answer, this panel will show which Ikigai areas are becoming stronger.";
+        return;
+      }
+
+      const scores = getCategoryScores();
+      const strongest = Object.entries(scores)
+        .sort((a, b) => b[1] - a[1])[0];
+
+      liveStatusTitle.textContent =
+        `Current strongest area: ${categoryInfo[strongest[0]].name}`;
+
+      liveStatusText.textContent =
+        `${completed} of ${questions.length} answers completed. ` +
+        `${categoryInfo[strongest[0]].description}`;
+    }
+
+    function getLevel(score) {
+      if (score >= 4.2) return "Very strong";
+      if (score >= 3.4) return "Strong";
+      if (score >= 2.6) return "Developing";
+      return "Needs attention";
+    }
+
+    function calculateResult() {
+      saveCurrentAnswer();
+
+      const scores = getCategoryScores();
+      const completedAnswers = getCompletedAnswerCount();
+      const minimumScore = Math.min(...Object.values(scores));
+      const averageScore =
+        Object.values(scores).reduce((sum, score) => sum + score, 0) / 4;
+
+      const allAreasStrong = minimumScore >= 3.5;
+      const allAnswersCompleted = completedAnswers === questions.length;
+      const ikigaiComplete = allAreasStrong && allAnswersCompleted;
+
+      const sortedScores = Object.entries(scores)
+        .sort((a, b) => b[1] - a[1]);
+
+      const strongest = sortedScores[0][0];
+      const weakest = sortedScores[sortedScores.length - 1][0];
+
+      return {
+        scores,
+        completedAnswers,
+        averageScore,
+        strongest,
+        weakest,
+        ikigaiComplete
+      };
+    }
+
+    function showResults() {
+      const result = calculateResult();
+
+      questionArea.style.display = "none";
+      resultsArea.classList.add("show");
+      progressText.textContent = "Assessment complete";
+      progressPercent.textContent = "100%";
+      progressBar.style.width = "100%";
+      updateCircleHighlight("");
+
+      if (result.ikigaiComplete) {
+        resultTitle.textContent = "You have a balanced Ikigai foundation";
+        resultSummary.textContent =
+          "All four areas are strongly represented. Your next step is to turn the overlap into a specific project, role, service, or daily practice.";
+      } else if (result.averageScore >= 3.5) {
+        resultTitle.textContent = "Your Ikigai is close to alignment";
+        resultSummary.textContent =
+          `Your strongest area is ${categoryInfo[result.strongest].name}. ` +
+          `The main area to develop is ${categoryInfo[result.weakest].name}.`;
+      } else {
+        resultTitle.textContent = "Your Ikigai is still taking shape";
+        resultSummary.textContent =
+          `You already have useful signals, especially in ${categoryInfo[result.strongest].name}. ` +
+          `Build greater clarity in ${categoryInfo[result.weakest].name} before deciding that the full Ikigai is complete.`;
+      }
+
+      resultList.innerHTML = "";
+
+      Object.entries(result.scores).forEach(([category, score]) => {
+        const relatedAnswers = questions
+          .map((question, index) => ({ question, answer: answers[index] }))
+          .filter(item => item.question.category === category)
+          .map(item => item.answer.text)
+          .filter(Boolean);
+
+        const item = document.createElement("article");
+        item.className = "result-item";
+        item.innerHTML = `
+          <h3>${categoryInfo[category].name}</h3>
+          <p>${categoryInfo[category].description}</p>
+          <p><strong>Your notes:</strong> ${
+            relatedAnswers.length
+              ? relatedAnswers.map(text => escapeHtml(text)).join(" • ")
+              : "No written answer provided."
+          }</p>
+          <span class="badge">${getLevel(score)} — ${score.toFixed(1)} / 5</span>
+        `;
+        resultList.appendChild(item);
+      });
+
+      liveStatusTitle.textContent = result.ikigaiComplete
+        ? "Ikigai status: complete foundation"
+        : "Ikigai status: incomplete or unbalanced";
+
+      liveStatusText.textContent = result.ikigaiComplete
+        ? "Your responses show meaningful strength across love, skill, need, and sustainable value."
+        : `Focus next on ${categoryInfo[result.weakest].name}. Completion requires all four areas to be reasonably strong, not merely one or two.`;
+    }
+
+    function escapeHtml(value) {
+      return value.replace(/[&<>"']/g, character => {
+        const entities = {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        };
+        return entities[character];
+      });
+    }
+
+    nextButton.addEventListener("click", () => {
+      saveCurrentAnswer();
+
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion += 1;
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    });
+
+    backButton.addEventListener("click", () => {
+      saveCurrentAnswer();
+
+      if (currentQuestion > 0) {
+        currentQuestion -= 1;
+        loadQuestion();
+      }
+    });
+
+    scoreInput.addEventListener("input", () => {
+      scoreValue.textContent = `${scoreInput.value} / 5`;
+      answers[currentQuestion].score = Number(scoreInput.value);
+      updateLiveStatus();
+    });
+
+    answerInput.addEventListener("input", () => {
+      answers[currentQuestion].text = answerInput.value.trim();
+      updateLiveStatus();
+    });
+
+    editButton.addEventListener("click", () => {
+      resultsArea.classList.remove("show");
+      questionArea.style.display = "block";
+      currentQuestion = 0;
+      loadQuestion();
+    });
+
+    restartButton.addEventListener("click", () => {
+      answers = questions.map(() => ({
+        text: "",
+        score: 3
+      }));
+
+      currentQuestion = 0;
+      resultsArea.classList.remove("show");
+      questionArea.style.display = "block";
+      loadQuestion();
+    });
+
+    loadQuestion();
+  </script>
+</body>
+</html>
